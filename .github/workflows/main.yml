@@ -1,0 +1,44 @@
+name: Super Realistic 120 Days Activity
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backdate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create 120 Days Activity
+        run: |
+          git config --local user.email "asadbek.y0ldoshev623@gmail.com"
+          git config --local user.name "Asadbek"
+          
+          for i in {120..1}
+          do
+            DAY_OF_WEEK=$(date -d "$i days ago" +%u)
+            CHANCE=$((RANDOM % 100))
+            
+            THRESHOLD=35
+            if [ $DAY_OF_WEEK -ge 6 ]; then THRESHOLD=85; fi
+
+            if [ $CHANCE -gt $THRESHOLD ]; then
+                RANDOM_COUNT=$((1 + RANDOM % 15))
+                
+                for j in $(seq 1 $RANDOM_COUNT)
+                do
+                  D=$(date -d "$i days ago" +%Y-%m-%dT%H:%M:%S)
+                  echo "Update for $D - Rand: $RANDOM" > activity.txt
+                  git add activity.txt
+                  GIT_AUTHOR_DATE="$D" GIT_COMMITTER_DATE="$D" git commit -m "Fixing module $j on $D"
+                done
+            fi
+          done
+          
+          git push origin main --force
